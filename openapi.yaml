@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Student Grades API
+  version: 1.0.0
+  description: A simple REST API for managing student grades
+servers:
+  - url: http://localhost:5000
+
+paths:
+  /students/{student_id}/grades:
+    get:
+      summary: Get all grades for a student
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of grades
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student_id:
+                    type: string
+                  grades:
+                    type: array
+                    items:
+                      type: number
+        "404":
+          description: Student not found
+
+    post:
+      summary: Add a grade for a student
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - grade
+              properties:
+                grade:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+      responses:
+        "201":
+          description: Grade added successfully
+        "400":
+          description: Invalid input
+
+  /students/{student_id}/average:
+    get:
+      summary: Get average grade for a student
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Average grade
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student_id:
+                    type: string
+                  average:
+                    type: number
+        "404":
+          description: Student or grades not found
