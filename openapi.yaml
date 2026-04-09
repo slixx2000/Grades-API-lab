@@ -1,85 +1,319 @@
 openapi: 3.0.3
 info:
   title: Student Grades API
-  version: 1.0.0
-  description: A simple REST API for managing student grades
+  version: 1.1.0
+  description: REST API for managing student grades with student names.
 servers:
   - url: http://localhost:5000
 
 paths:
-  /students/{student_id}/grades:
+  /students:
     get:
-      summary: Get all grades for a student
-      parameters:
-        - name: student_id
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Get all students with averages
       responses:
         "200":
-          description: List of grades
+          description: List of students
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  student_id:
-                    type: string
-                  grades:
+                  students:
                     type: array
                     items:
-                      type: number
+                      $ref: "#/components/schemas/StudentAverageItem"
+        "404":
+          description: No students found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /students/{student_id}/grades:
+    get:
+      summary: Get all grade records and average for a student
+      parameters:
+        - $ref: "#/components/parameters/StudentId"
+      responses:
+        "200":
+          description: Student grades and average
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentGradesResponse"
         "404":
           description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
     post:
       summary: Add a grade for a student
       parameters:
-        - name: student_id
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/StudentId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - grade
-              properties:
-                grade:
-                  type: number
-                  minimum: 0
-                  maximum: 100
+              $ref: "#/components/schemas/PostGradeRequest"
       responses:
         "201":
           description: Grade added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostGradeResponse"
         "400":
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      summary: Update a student's grade by student_id
+      description: |
+        If grade_id is provided, that specific grade record is updated.
+        If grade_id is omitted, the latest grade record for the student is updated.
+      parameters:
+        - $ref: "#/components/parameters/StudentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutGradeRequest"
+      responses:
+        "200":
+          description: Grade updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutGradeResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Student or grade record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      summary: Delete all grades for a student
+      parameters:
+        - $ref: "#/components/parameters/StudentId"
+      responses:
+        "200":
+          description: Student grades deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteGradesResponse"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /students/{student_id}/average:
     get:
       summary: Get average grade for a student
       parameters:
-        - name: student_id
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/StudentId"
       responses:
         "200":
-          description: Average grade
+          description: Student average
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  student_id:
-                    type: string
-                  average:
-                    type: number
+                $ref: "#/components/schemas/StudentAverageItem"
         "404":
-          description: Student or grades not found
+          description: No grades found for student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  parameters:
+    StudentId:
+      name: student_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique student identifier.
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    GradeRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        grade:
+          type: number
+          format: float
+      required:
+        - id
+        - grade
+
+    StudentAverageItem:
+      type: object
+      properties:
+        student_id:
+          type: string
+        student_name:
+          type: string
+        average:
+          type: number
+          format: float
+      required:
+        - student_id
+        - student_name
+        - average
+
+    StudentGradesResponse:
+      type: object
+      properties:
+        student_id:
+          type: string
+        student_name:
+          type: string
+        average:
+          type: number
+          format: float
+        grades:
+          type: array
+          items:
+            $ref: "#/components/schemas/GradeRecord"
+      required:
+        - student_id
+        - student_name
+        - average
+        - grades
+
+    PostGradeRequest:
+      type: object
+      properties:
+        student_name:
+          type: string
+          description: Required for new student_id, optional for existing student_id.
+        grade:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+      required:
+        - grade
+
+    PutGradeRequest:
+      type: object
+      properties:
+        grade_id:
+          type: integer
+          description: Optional grade record id to update.
+        grade:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+      required:
+        - grade
+
+    PostGradeResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Grade added
+        student:
+          type: object
+          properties:
+            student_id:
+              type: string
+            student_name:
+              type: string
+            grade:
+              type: number
+              format: float
+            average:
+              type: number
+              format: float
+          required:
+            - student_id
+            - student_name
+            - grade
+            - average
+      required:
+        - message
+        - student
+
+    PutGradeResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Grade updated
+        student:
+          type: object
+          properties:
+            student_id:
+              type: string
+            student_name:
+              type: string
+            grade:
+              type: number
+              format: float
+            average:
+              type: number
+              format: float
+            updated_grade_id:
+              type: integer
+          required:
+            - student_id
+            - student_name
+            - grade
+            - average
+            - updated_grade_id
+      required:
+        - message
+        - student
+
+    DeleteGradesResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Student grades deleted
+        student:
+          type: object
+          properties:
+            student_id:
+              type: string
+            student_name:
+              type: string
+            deleted_grades:
+              type: integer
+          required:
+            - student_id
+            - student_name
+            - deleted_grades
+      required:
+        - message
+        - student
