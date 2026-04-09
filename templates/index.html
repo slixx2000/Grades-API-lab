@@ -5,43 +5,116 @@
     <title>Student Grades API</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #eef2f7, #f7f9fc);
             padding: 40px;
+            margin: 0;
         }
         .card {
-            background: white;
-            padding: 24px;
-            max-width: 600px;
+            background: #ffffff;
+            padding: 28px;
+            max-width: 860px;
             margin: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e5e7eb;
         }
         h1 {
             margin-top: 0;
+            color: #111827;
+            letter-spacing: 0.2px;
+        }
+        h3 {
+            color: #1f2937;
+            margin-top: 24px;
         }
         code {
-            background: #eee;
-            padding: 4px 6px;
+            background: #f3f4f6;
+            padding: 3px 6px;
             border-radius: 4px;
+            color: #111827;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead {
+            background: #f9fafb;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid #eceff3;
+            vertical-align: top;
+        }
+        th {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #374151;
+        }
+        tbody tr:nth-child(even) {
+            background: #fcfdff;
+        }
+        tbody tr:hover {
+            background: #f7fbff;
+        }
+        td:last-child {
+            font-weight: 600;
+            color: #0f766e;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        p {
+            color: #374151;
         }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>🎓 Student Grades API</h1>
-        <p>This API is running successfully.</p>
+        <p>Live data from the database (updated on every page load).</p>
+
+        <h3>Students and Grades</h3>
+        {% if grade_rows %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Grade</th>
+                    <th>Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in grade_rows %}
+                <tr>
+                    <td>{{ row.student_id }}</td>
+                    <td>{{ row.student_name }}</td>
+                    <td>{{ row.grade }}</td>
+                    <td>{{ row.average }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No grades yet. Add data via the API endpoints below.</p>
+        {% endif %}
 
         <h3>Available Endpoints</h3>
         <ul>
             <li><code>POST /students/&lt;student_id&gt;/grades</code></li>
+            <li><code>GET /students/&lt;student_id&gt;/average</code></li>
+            <li><code>PUT /students/&lt;student_id&gt;/grades</code></li>
+            <li><code>DELETE /students/&lt;student_id&gt;/grades</code></li>
             <li><code>GET /students/&lt;student_id&gt;/grades</code></li>
             <li><code>GET /students/&lt;student_id&gt;/average</code></li>
         </ul>
-
-        <h3>Testing</h3>
-        <p>Use <strong>Thunder Client</strong>, Postman, or curl to test the endpoints.</p>
-
         <p style="color: #666;">Flask + Flask-RESTful + SQLAlchemy</p>
     </div>
 </body>
